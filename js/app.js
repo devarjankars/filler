@@ -268,9 +268,12 @@ function switchManufacturingDetail(button, panelId) {
  * @param {Event|null} event - originating click event (may be null)
  */
 function showSection(id, event) {
+ 
   if (id !== 'product-selection' && id !== 'graphContainer' &&
       document.querySelector('#product-selection.active, #graphContainer.active')) {
     resetProductSelection();
+    
+   
   }
   closeRheologyPopups();
   if (id !== 'mechanical') resetOverviewVideos();
@@ -310,6 +313,7 @@ if (id === "product-selection") {
 }
   // 6. Section-specific side-effects
   if (id === 'graphContainer') {
+  // resetTissueIntegrationtoggle();
     // Ensure chart section is visible and charts render properly
     setTimeout(() => {
       if (window.myChartInstance) window.myChartInstance.resize();
@@ -404,6 +408,7 @@ function switchTab(btn, tabId) {
  * @param {string} tabId - 'lift' | 'extrusion' | 'tissue'
  */
 function switchFillerTab(btn, tabId) {
+  // resetTissueIntegrationtoggle();
   const pane = document.getElementById('pane-' + tabId);
   const paneChanged = pane && !pane.classList.contains('active');
   document.querySelectorAll('.filler-tab-btn').forEach(b => b.classList.remove('active'));
@@ -434,6 +439,13 @@ function switchFillerTab(btn, tabId) {
     }
   }, 50);
 }
+
+// function resetswitchFillertab(){
+//   document.querySelectorAll('.filler-tab-btn').forEach(b => b.classList.remove('active'));
+
+// }
+
+
 
 function resizeScatterChart(stopAnimation = false) {
   const graphEl = document.getElementById('scattergraphContainer');
@@ -699,6 +711,7 @@ function closePopup() {
 
 function continueAction() {
   closeModal('confirmPopup');
+  resetTissueIntegrationtoggle();
   showSection('graphContainer', null);
 
   // Show the products bar when entering graph view
@@ -715,6 +728,10 @@ function continueAction() {
     document.querySelector('.filler-body').style.display = "block";
     document.querySelectorAll('#fillerTabsContent .tab-pane').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.filler-tab-btn').forEach(b => b.classList.remove('active'));
+    // document.querySelectorAll('.tab-pane tissue-btn').forEach(b => b.classList.remove('active'));
+   resetTissueIntegrationtoggle();
+    
+    
   });
   // if (goBack) goBack.style.display = 'flex';
 
@@ -769,7 +786,61 @@ function switchTissueType(btn, type) {
   if (typeof renderTissueImages === 'function') {
     renderTissueImages(currentTissueWeek, currentTissueType);
   }
+  
 }
+
+function resetTissueIntegrationtoggle(){
+  //  currentTissueWeek = 'Week1';
+  //   currentTissueType = 'all';
+   document.querySelector('.filler-body').style.display = 'block';
+
+    // Remove filler expanded-pane state
+    document.getElementById('graphContainer').classList.remove('filler-pane-open');
+
+    // Hide Go Back button
+    document.getElementById('GoBack').style.display = 'none';
+
+    // Reset heading
+    document.getElementById('filler-heading').textContent = 'Product Comparison';
+
+    // Reset filler tab buttons
+    document.querySelectorAll('.filler-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Hide Lift, Extrusion and Tissue panes
+    document.querySelectorAll('#fillerTabsContent .tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+
+    // Reset Graph / Table to Graph
+    switchGraphTable('graph');
+
+  activeWeek="Week1";
+  activeLayer="All";
+      document.querySelectorAll('.tissue-week-btns .tissue-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tissue-week-btns .tissue-btn')[0].classList.add('active')
+
+    document.querySelectorAll('.tissue-type-btns .tissue-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tissue-type-btns .tissue-btn')[0].classList.add('active');
+  document.querySelectorAll(' .tab-pane').forEach(p => p.classList.remove('active'));
+
+
+
+
+    // Reset heading
+
+
+    
+
+ renderTissueIntefration(selectedProducts);
+
+   
+
+}
+
+
+
 
 
 /* ═════════════════════════════════════════════════
@@ -914,12 +985,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // const isFullscreen = () =>
+  // !!(document.fullscreenElement || document.webkitFullscreenElement);
+
+// const updateOrientationLock = () => {
+//   // Fullscreen video rotates the device to landscape; don't lock then.
+//   const isLocked = !isFullscreen() &&
+//     (phoneLandscapeQuery.matches || tabletPortraitQuery.matches);
+
+//   document.querySelectorAll('.view').forEach(view => {
+//     view.inert = isLocked;
+//   });
+
+//   if (!orientationLock) return;
+
+//   if (isLocked && !orientationLock.classList.contains('is-active')) {
+//     previouslyFocusedElement = document.activeElement;
+//     orientationLock.classList.add('is-active');
+//     orientationLock.focus();
+//   } else if (!isLocked && orientationLock.classList.contains('is-active')) {
+//     orientationLock.classList.remove('is-active');
+//     if (previouslyFocusedElement instanceof HTMLElement && previouslyFocusedElement.isConnected) {
+//       previouslyFocusedElement.focus();
+//     }
+//   }
+// };
+
+// document.addEventListener('fullscreenchange', () => {
+//   if (!isFullscreen()) setTimeout(updateOrientationLock, 300);
+// });
+
+
+
+document.addEventListener('fullscreenchange', updateOrientationLock);
+document.addEventListener('webkitfullscreenchange', updateOrientationLock);
   phoneLandscapeQuery.addEventListener('change', updateOrientationLock);
   tabletPortraitQuery.addEventListener('change', updateOrientationLock);
   window.addEventListener('resize', updateOrientationLock);
   window.addEventListener('orientationchange', updateOrientationLock);
   updateOrientationLock();
 
+//   video.addEventListener('play', () => {
+//   if (video.paused || isFullscreen()) return;
+//   // ...rest unchanged
+// });
   const portraitLayout = window.matchMedia(
     '(orientation: portrait) and (min-width: 951px) and (max-width: 1366px)'
   );
@@ -965,20 +1074,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateVideoControls() {
-      const useCustomPlay = touchVideoPreview.matches || phoneVideoPreview.matches;
-      const showPlay = video.paused || video.ended;
-      video.controls = !useCustomPlay || !showPlay;
-      playButton.hidden = !showPlay;
-      if (duration) {
-        duration.hidden = !useCustomPlay || !showPlay || video.currentTime !== 0 ||
-          video.ended || !Number.isFinite(video.duration);
-        if (!duration.hidden) {
-          const seconds = Math.floor(video.duration);
-          duration.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
-        }
-      }
+  const useCustomPlay = touchVideoPreview.matches || phoneVideoPreview.matches;
+
+  // Custom overlay only before playback starts (or after it ends).
+  // Never while the user is scrubbing or has paused mid-video.
+  const isInitialOrEnded =
+    video.ended || (video.paused && video.currentTime === 0 && !video.seeking);
+  const showPlay = useCustomPlay && isInitialOrEnded;
+
+  video.controls = !showPlay;
+  playButton.hidden = !showPlay;
+
+  if (duration) {
+    duration.hidden = !showPlay || video.ended || !Number.isFinite(video.duration);
+    if (!duration.hidden) {
+      const seconds = Math.floor(video.duration);
+      duration.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
     }
-    ['loadedmetadata', 'play', 'pause', 'ended', 'emptied', 'seeked'].forEach(event => {
+  }
+}
+
+    // function updateVideoControls() {
+    //   const useCustomPlay = touchVideoPreview.matches || phoneVideoPreview.matches;
+    //   const showPlay = video.paused || video.ended;
+    //   video.controls = !useCustomPlay || !showPlay;
+    //   playButton.hidden = !showPlay;
+    //   if (duration) {
+    //     duration.hidden = !useCustomPlay || !showPlay || video.currentTime !== 0 ||
+    //       video.ended || !Number.isFinite(video.duration);
+    //     if (!duration.hidden) {
+    //       const seconds = Math.floor(video.duration);
+    //       duration.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+    //     }
+    //   }
+    // }
+    // ['loadedmetadata', 'play', 'pause', 'ended', 'emptied', 'seeked'].forEach(event => {
+    //   video.addEventListener(event, updateVideoControls);
+    // });
+    ['loadedmetadata', 'play', 'pause', 'ended', 'emptied'].forEach(event => {
       video.addEventListener(event, updateVideoControls);
     });
     touchVideoPreview.addEventListener('change', updateVideoControls);
